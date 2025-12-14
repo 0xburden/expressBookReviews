@@ -4,7 +4,6 @@ const isValid = require("./auth_users.js").isValid;
 const users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-
 public_users.post("/register", (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -13,7 +12,6 @@ public_users.post("/register", (req, res) => {
     if (!users.length) {
       return false;
     }
-    console.log(users);
     return users.map((user) => user.username).includes(username);
   }
 
@@ -29,31 +27,40 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/', function (req, res) {
-  return res.send(JSON.stringify(books));
+public_users.get('/', async function (req, res) {
+  const bookPromise = new Promise((resolve, _reject) => {
+    resolve(books);
+  });
+  const bookResponse = await bookPromise;
+  res.json(bookResponse);
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
+public_users.get('/isbn/:isbn', async function (req, res) {
   const isbn = req.params.isbn;
-  res.send(JSON.stringify(books[isbn]));
+  const bookPromise = new Promise((resolve, _reject) => resolve(books));
+  const bookResponse = await bookPromise;
+  res.send(JSON.stringify(bookResponse[isbn]));
 });
 
 // Get book details based on author
-public_users.get('/author/:author', function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
   let foundBook;
   const author = req.params.author.trim().toLowerCase();
-  console.log("author", author);
-  const foundBooks = Object.values(books).filter(
+  const bookPromise = new Promise((resolve, _reject) => resolve(books));
+  const bookResponse = await bookPromise;
+  const foundBooks = Object.values(bookResponse).filter(
     (book) => book.author.toLowerCase() === author
   );
   res.send(foundBooks);
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
   const title = req.params.title.trim().toLowerCase();
-  const foundBooks = Object.values(books).filter(
+  const bookPromise = new Promise((resolve, _reject) => resolve(books));
+  const bookResponse = await bookPromise;
+  const foundBooks = Object.values(bookResponse).filter(
     (book) => book.title.toLowerCase() === title
   );
   res.send(JSON.stringify(foundBooks));
